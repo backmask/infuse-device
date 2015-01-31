@@ -6,26 +6,51 @@ from infuse import Infuse
 
 class Controller:
 
+  def get_symbol(self, symbolList, idx):
+    return symbolList[idx] if len(symbolList) > idx else 's' + str(idx)
+
   def fill_defaults(self, numAxes, numButton, numCrosses):
-    self.joysticks = [(0, 0)] * numAxes
-    self.buttons = [False] * numButton
-    self.crosses = [(0, 0)] * numCrosses
+    joystickSymbols = ['l', 'r']
+    buttonSymbols = ['a', 'b', 'x', 'y']
+    crossSymbols = ['l', 'r']
+
+    self.joysticks = []
+    self.buttons = []
+    self.crosses = []
+
+    for i in xrange(0, numAxes, 2):
+      self.joysticks.append({
+        'symbol': self.get_symbol(joystickSymbols, i),
+        'x': 0,
+        'y': 0
+      })
+
+    for i in xrange(0, numButton):
+      self.buttons.append({
+        'symbol': self.get_symbol(buttonSymbols, i),
+        'pressed': False
+      })
+
+    for i in xrange(0, numCrosses):
+      self.crosses.append({
+        'symbol': self.get_symbol(crossSymbols, i),
+        'x': 0,
+        'y': 0
+      })
 
   def read_input(self, input):
     if input.type == pygame.locals.JOYAXISMOTION:
       idx = int(input.axis / 2)
       if input.axis % 2 == 0:
-        self.joysticks[idx] = (input.value, self.joysticks[idx][1])
+        self.joysticks[idx]['x'] = input.value
       else:
-        self.joysticks[idx] = (self.joysticks[idx][0], input.value)
+        self.joysticks[idx]['y'] = input.value
     elif input.type == pygame.locals.JOYBUTTONDOWN:
-      self.buttons[input.button] = True
+      self.buttons[input.button]['pressed'] = True
     elif input.type == pygame.locals.JOYBUTTONUP:
-      self.buttons[input.button] = False
-    elif input.type == pygame.locals.JOYHATMOTION:
-      self.joysticks[input.hat] = input.value
+      self.buttons[input.button]['pressed'] = False
     else:
-      print 'Event not handled ' + input.type
+      print 'Event not handled ' + str(input.type)
 
   def loop(self):
     print 'Initializing'
@@ -66,9 +91,9 @@ class Controller:
           self.read_input(e)
 
         infuse.send({
-          'joysticks': self.joysticks,
-          'buttons': self.buttons,
-          'crosses': self.crosses
+          'joystick': self.joysticks,
+          'button': self.buttons,
+          'cross': self.crosses
           })
 
         sleep(0.01)
