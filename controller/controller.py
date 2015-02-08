@@ -2,7 +2,7 @@ import pygame
 import pygame.locals
 import sys
 from time import sleep
-from infuse import Infuse
+from lib.infuse import Infuse
 
 class Controller:
 
@@ -52,7 +52,7 @@ class Controller:
     else:
       print 'Event not handled ' + str(input.type)
 
-  def loop(self):
+  def init(self):
     print 'Initializing'
     pygame.init()
     pygame.joystick.quit()
@@ -76,6 +76,7 @@ class Controller:
       controller.get_numbuttons(),
       controller.get_numhats())
 
+  def loop(self):
     print 'Connecting to remote'
     infuse = Infuse(('localhost', 2946), {
         'name': 'Wii U controller',
@@ -104,7 +105,3 @@ class Controller:
     infuse.disconnect()
 
     print 'Done'
-
-
-if __name__ == "__main__":
-    Controller().loop()
