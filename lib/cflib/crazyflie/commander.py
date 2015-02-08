@@ -33,7 +33,7 @@ Used for sending control setpoints to the Crazyflie
 __author__ = 'Bitcraze AB'
 __all__ = ['Commander']
 
-from ..crtp.crtpstack import CRTPPacket, CRTPPort
+from cflib.crtp.crtpstack import CRTPPacket, CRTPPort
 import struct
 
 

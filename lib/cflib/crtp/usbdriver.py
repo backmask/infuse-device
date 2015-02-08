@@ -38,7 +38,7 @@ __all__ = ['UsbDriver']
 import logging
 logger = logging.getLogger(__name__)
 
-from .crtpdriver import CRTPDriver
+from cflib.crtp.crtpdriver import CRTPDriver
 from .crtpstack import CRTPPacket
 from .exceptions import WrongUriType
 import threading
@@ -46,7 +46,7 @@ import Queue
 import re
 import time
 
-from ..drivers.cfusb import CfUsb
+from cflib.drivers.cfusb import CfUsb
 from usb import USBError
 
 

@@ -25,40 +25,36 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA  02110-1301, USA.
+
 """
-Crazyflie console is used to receive characters printed using printf
-from the firmware.
+Used for sending control setpoints to the Crazyflie
 """
 
 __author__ = 'Bitcraze AB'
-__all__ = ['Console']
+__all__ = ['PlatformService']
 
+from cflib.crtp.crtpstack import CRTPPacket, CRTPPort
 import struct
-from ..utils.callbacks import Caller
-from ..crtp.crtpstack import CRTPPort
 
 
-class Console:
+class PlatformService():
     """
-    Crazyflie console is used to receive characters printed using printf
-    from the firmware.
+    Used for sending control setpoints to the Crazyflie
     """
 
-    receivedChar = Caller()
+    def __init__(self, crazyflie=None):
+        """
+        Initialize the platform object.
+        """
+        self._cf = crazyflie
 
-    def __init__(self, crazyflie):
+    def set_continous_wave(self, enabled):
         """
-        Initialize the console and register it to receive data from the copter.
+        Enable/disable the client side X-mode. When enabled this recalculates
+        the setpoints before sending them to the Crazyflie.
         """
-        self.cf = crazyflie
-        self.cf.add_port_callback(CRTPPort.CONSOLE, self.incoming)
+        pk = CRTPPacket()
+        pk.set_header(CRTPPort.PLATFORM, 0)
+        pk.data = (0, enabled)
+        self._cf.send_packet(pk)
 
-    def incoming(self, packet):
-        """
-        Callback for data received from the copter.
-        """
-        # This might be done prettier ;-)
-        console_text = "%s" % struct.unpack("%is" % len(packet.data),
-                                            packet.data)
-
-        self.receivedChar.call(console_text)

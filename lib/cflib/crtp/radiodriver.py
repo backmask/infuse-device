@@ -39,7 +39,7 @@ __all__ = ['RadioDriver']
 import logging
 logger = logging.getLogger(__name__)
 
-from .crtpdriver import CRTPDriver
+from cflib.crtp.crtpdriver import CRTPDriver
 from .crtpstack import CRTPPacket
 from .exceptions import WrongUriType
 import threading
@@ -49,7 +49,7 @@ import array
 import binascii
 import struct
 
-from ..drivers.crazyradio import Crazyradio
+from cflib.drivers.crazyradio import Crazyradio
 from usb import USBError
 
 
@@ -247,8 +247,7 @@ class RadioDriver(CRTPDriver):
         if self.cradio is None:
             try:
                 self.cradio = Crazyradio()
-            except Exception,e:
-                print str(e)
+            except Exception:
                 return []
         else:
             raise Exception("Cannot scann for links while the link is open!")

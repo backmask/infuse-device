@@ -1,24 +1,14 @@
-from cflib.crtp.crtp import Crtp
-from cflib.crazyflie import Crazyflie
-from lib.infuse import Infuse
+from infuse import Infuse
 from time import sleep
+import logging
+
+import cflib.crtp
+from cflib.crazyflie import Crazyflie
+from cflib.crazyflie.log import LogConfig
+
+logging.basicConfig(level=logging.INFO)
 
 class CrazyControl:
-
-  def _attach(self, link_uri):
-    print 'Attaching to %s' % link_uri
-    self._cf.open_link(link_uri)
-    self.is_connected = True
-
-  def _get_device(self):
-    print "Scanning interfaces"
-    available = Crtp.scan_interfaces()
-
-    print "Crazyflies found:"
-    for i in available:
-      print i[0]
-
-    return False if len(available) == 0 else available[0][0]
 
   def _init(self):
     print 'Initializing'
@@ -27,16 +17,27 @@ class CrazyControl:
     self._cf.disconnected.add_callback(self._disconnected)
     self._cf.connection_failed.add_callback(self._connection_failed)
     self._cf.connection_lost.add_callback(self._connection_lost)
-    Crtp.init_drivers(enable_debug_driver=False)
+    cflib.crtp.init_drivers(enable_debug_driver=False)
+
+  def _get_device(self):
+    print "Scanning interfaces"
+    available = cflib.crtp.scan_interfaces()
+    if len(available) == 0:
+      return False
+
+    print "Crazyflies found:"
+    for i in available:
+      print i[0]
+
+    return available[0][0]
+
+  def _attach(self, link_uri):
+    print 'Attaching to %s' % link_uri
+    self._cf.open_link(link_uri)
+    self.is_connected = True
 
   def _connected(self, link_uri):
     print "Connected to %s" % link_uri
-    print "Listing available parameters"
-    p_toc = self._cf.param.toc.toc
-    for group in sorted(p_toc.keys()):
-      print "{}".format(group)
-      for param in sorted(p_toc[group].keys()):
-        print "\t{}".format(param)
     self._setup_logger()
 
   def _setup_logger(self):
@@ -50,7 +51,7 @@ class CrazyControl:
     self._cf.log.add_config(lg)
     if lg.valid:
       lg.data_received_cb.add_callback(self._on_telemetry_update)
-      #self._lg_stab.error_cb.add_callback(self._stab_log_error)
+      lg.error_cb.add_callback(self._on_telemetry_error)
       lg.start()
       print("Done")
     else:
@@ -67,18 +68,21 @@ class CrazyControl:
     print "Disconnected from %s" % link_uri
     self.is_connected = False
 
-  def _on_telemetry_update(self, timestamp, data):
-    print data
+  def _on_telemetry_update(self, timestamp, data, logconf):
+    print "[%d][%s]: %s" % (timestamp, logconf.name, data)
+
+  def _on_telemetry_error(self, logconf, msg):
+    print "Error when logging %s: %s" % (logconf.name, msg)
 
   def _loop(self):
-    print 'Connecting to remote'
-    infuse = Infuse(('localhost', 2946), {
-        'name': 'Crazyflie',
-        'family': 'flight.copter',
-        'version': 'crazyflie-1.0.0',
-        'sensors': ['gyroscope']
-      })
-    infuse.connect()
+    # print 'Connecting to remote'
+    # infuse = Infuse(('localhost', 2946), {
+    #     'name': 'Crazyflie',
+    #     'family': 'flight.copter',
+    #     'version': 'crazyflie-1.0.0',
+    #     'sensors': ['gyroscope']
+    #   })
+    # infuse.connect()
 
     try:
       while self.is_connected:
@@ -87,8 +91,7 @@ class CrazyControl:
       pass
 
     print 'Disconnecting'
-    infuse.disconnect()
-    self._cf.close_link()
+    # infuse.disconnect()
 
     print 'Done'
 
@@ -100,3 +103,4 @@ class CrazyControl:
       return
     self._attach(device)
     self._loop()
+    self._cf.close_link()

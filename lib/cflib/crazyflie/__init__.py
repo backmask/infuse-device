@@ -54,7 +54,9 @@ from .toccache import TocCache
 from .mem import Memory
 from .platformservice import PlatformService
 
-from ..utils.callbacks import Caller
+import cflib.crtp
+
+from cflib.utils.callbacks import Caller
 
 
 class State:
@@ -210,8 +212,7 @@ class Crazyflie():
         self.state = State.INITIALIZED
         self.link_uri = link_uri
         try:
-            from ..crtp.crtp import Crtp
-            self.link = Crtp.get_link_driver(link_uri,
+            self.link = cflib.crtp.get_link_driver(link_uri,
                                                    self._link_quality_cb,
                                                    self._link_error_cb)
 

@@ -49,8 +49,8 @@ import re
 import time
 import struct
 from datetime import datetime
-from ..crazyflie.log import LogTocElement
-from ..crazyflie.param import ParamTocElement
+from cflib.crazyflie.log import LogTocElement
+from cflib.crazyflie.param import ParamTocElement
 import random
 import string
 import errno

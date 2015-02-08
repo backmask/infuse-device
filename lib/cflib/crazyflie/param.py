@@ -37,9 +37,9 @@ the parameters that can be written/read.
 __author__ = 'Bitcraze AB'
 __all__ = ['Param', 'ParamTocElement']
 
-from ..utils.callbacks import Caller
+from cflib.utils.callbacks import Caller
 import struct
-from ..crtp.crtpstack import CRTPPacket, CRTPPort
+from cflib.crtp.crtpstack import CRTPPacket, CRTPPort
 from .toc import Toc, TocFetcher
 from threading import Thread, Lock
 

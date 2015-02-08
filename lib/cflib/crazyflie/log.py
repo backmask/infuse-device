@@ -68,8 +68,8 @@ __all__ = ['Log', 'LogTocElement']
 
 import struct
 import errno
-from ..crtp.crtpstack import CRTPPacket, CRTPPort
-from ..utils.callbacks import Caller
+from cflib.crtp.crtpstack import CRTPPacket, CRTPPort
+from cflib.utils.callbacks import Caller
 from .toc import Toc, TocFetcher
 
 # Channels used for the logging port

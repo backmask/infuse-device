@@ -25,8 +25,40 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA  02110-1301, USA.
-
-"""Scans and creates communication interfaces."""
+"""
+Crazyflie console is used to receive characters printed using printf
+from the firmware.
+"""
 
 __author__ = 'Bitcraze AB'
-__all__ = []
+__all__ = ['Console']
+
+import struct
+from cflib.utils.callbacks import Caller
+from cflib.crtp.crtpstack import CRTPPort
+
+
+class Console:
+    """
+    Crazyflie console is used to receive characters printed using printf
+    from the firmware.
+    """
+
+    receivedChar = Caller()
+
+    def __init__(self, crazyflie):
+        """
+        Initialize the console and register it to receive data from the copter.
+        """
+        self.cf = crazyflie
+        self.cf.add_port_callback(CRTPPort.CONSOLE, self.incoming)
+
+    def incoming(self, packet):
+        """
+        Callback for data received from the copter.
+        """
+        # This might be done prettier ;-)
+        console_text = "%s" % struct.unpack("%is" % len(packet.data),
+                                            packet.data)
+
+        self.receivedChar.call(console_text)

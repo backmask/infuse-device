@@ -34,7 +34,7 @@ a TOC for logging or parameters.
 __author__ = 'Bitcraze AB'
 __all__ = ['TocElement', 'Toc', 'TocFetcher']
 
-from ..crtp.crtpstack import CRTPPacket
+from cflib.crtp.crtpstack import CRTPPacket
 import struct
 
 import logging

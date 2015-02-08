@@ -36,8 +36,8 @@ __all__ = ['Memory', 'MemoryElement']
 
 import struct
 import errno
-from ..crtp.crtpstack import CRTPPacket, CRTPPort
-from ..utils.callbacks import Caller
+from cflib.crtp.crtpstack import CRTPPacket, CRTPPort
+from cflib.utils.callbacks import Caller
 from binascii import crc32
 import binascii
 
