@@ -20,7 +20,7 @@ class Controller:
 
     for i in xrange(0, numAxes, 2):
       self.joysticks.append({
-        'symbol': self.get_symbol(joystickSymbols, i),
+        'symbol': self.get_symbol(joystickSymbols, int(i/2)),
         'x': 0,
         'y': 0
       })
@@ -96,7 +96,7 @@ class Controller:
           'cross': self.crosses
           })
 
-        sleep(0.01)
+        sleep(0.02)
     except KeyboardInterrupt:
       pass
 
