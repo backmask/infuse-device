@@ -57,6 +57,16 @@ class CrazyControl:
     else:
       print("Error setting up logger")
 
+  def _setup_remote(self):
+    print 'Connecting to remote'
+    self._infuse = Infuse(('localhost', 2946), {
+        'name': 'Crazyflie',
+        'family': 'flight.copter',
+        'version': 'crazyflie-1.0.0',
+        'sensors': ['gyroscope', 'thrust', 'barometer']
+      })
+    self._infuse.connect()
+
   def _connection_failed(self, link_uri, msg):
     print "Connection to %s failed: %s" % (link_uri, msg)
     self.is_connected = False
@@ -69,30 +79,24 @@ class CrazyControl:
     self.is_connected = False
 
   def _on_telemetry_update(self, timestamp, data, logconf):
-    print "[%d][%s]: %s" % (timestamp, logconf.name, data)
+    self._infuse.send({
+      'gyroscope': {
+        'roll': data['stabilizer.roll'],
+        'pitch': data['stabilizer.pitch'],
+        'yaw': data['stabilizer.yaw'],
+      },
+      'thrust': data['stabilizer.thrust']
+    })
 
   def _on_telemetry_error(self, logconf, msg):
     print "Error when logging %s: %s" % (logconf.name, msg)
 
   def _loop(self):
-    # print 'Connecting to remote'
-    # infuse = Infuse(('localhost', 2946), {
-    #     'name': 'Crazyflie',
-    #     'family': 'flight.copter',
-    #     'version': 'crazyflie-1.0.0',
-    #     'sensors': ['gyroscope']
-    #   })
-    # infuse.connect()
-
     try:
       while self.is_connected:
         sleep(0.02)
     except KeyboardInterrupt:
       pass
-
-    print 'Disconnecting'
-    # infuse.disconnect()
-
     print 'Done'
 
   def run(self):
@@ -101,6 +105,10 @@ class CrazyControl:
     if device == False:
       print 'No device found, exiting'
       return
+    self._setup_remote()
     self._attach(device)
     self._loop()
+
+    print 'Disconnecting'
     self._cf.close_link()
+    self._infuse.disconnect()
