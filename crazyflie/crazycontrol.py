@@ -61,7 +61,7 @@ class CrazyControl:
     print 'Connecting to remote'
     self._infuse = Infuse(('localhost', 2946), {
         'name': 'Crazyflie',
-        'family': 'flight.copter',
+        'family': 'flight.quadcopter',
         'version': 'crazyflie-1.0.0',
         'sensors': ['gyroscope', 'thrust', 'barometer']
       })

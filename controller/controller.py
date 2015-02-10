@@ -105,3 +105,7 @@ class Controller:
     infuse.disconnect()
 
     print 'Done'
+
+  def run(self):
+    self.init()
+    self.loop()
