@@ -4,4 +4,7 @@ sys.path.append("lib")
 from crazyflie.crazycontrol import CrazyControl
 
 if __name__ == "__main__":
-  CrazyControl().run_fake()
+  if len(sys.argv) > 1 and sys.argv[1] == 'fake':
+    CrazyControl().run_fake()
+  else:
+    CrazyControl().run()

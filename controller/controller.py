@@ -52,6 +52,9 @@ class Controller:
     else:
       print 'Event not handled ' + str(input.type)
 
+  def recv_callback(self, d):
+    print d
+
   def init(self):
     print 'Initializing'
     pygame.init()
@@ -83,7 +86,7 @@ class Controller:
         'family': 'controller',
         'version': 'remote-1.0.0',
         'sensors': ['joystick', 'button', 'nav-cross']
-      })
+      }, self.recv_callback)
     infuse.connect()
 
     try:

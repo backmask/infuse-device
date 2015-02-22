@@ -12,6 +12,12 @@ MAX_MOTOR_SPEED = 65365.0
 
 class CrazyControl:
 
+  def __init__(self):
+    self.target = {
+      'gyro': [0,0,0],
+      'thrust': 0
+    }
+
   def _init(self):
     print 'Initializing'
     self._cf = Crazyflie()
@@ -19,10 +25,6 @@ class CrazyControl:
     self._cf.disconnected.add_callback(self._disconnected)
     self._cf.connection_failed.add_callback(self._connection_failed)
     self._cf.connection_lost.add_callback(self._connection_lost)
-    self.target = {
-      'gyro': [0,0,0],
-      'thrust': 0
-    }
     cflib.crtp.init_drivers(enable_debug_driver=False)
 
   def _get_device(self):
@@ -141,18 +143,16 @@ class CrazyControl:
     })
 
   def _read_control(self, packet):
-    print packet
     if ('dataUid' in packet and packet['dataUid'] == 'flight.command'):
       self.target['thrust'] = packet['data']['thrust']
       self._exec_control(self.target)
 
   def _exec_control(self, control):
-    print control['thrust'] * 25000
-    # self._cf.commander.send_setpoint(
-    #   self.target['gyro'][0],
-    #   self.target['gyro'][1],
-    #   self.target['gyro'][2],
-    #   self.target['thrust'] * 25000)
+    self._cf.commander.send_setpoint(
+      self.target['gyro'][0],
+      self.target['gyro'][1],
+      self.target['gyro'][2],
+      self.target['thrust'] * 25000)
 
   def _on_telemetry_error(self, logconf, msg):
     print "Error when logging %s: %s" % (logconf.name, msg)
