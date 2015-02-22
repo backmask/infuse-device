@@ -1,0 +1,7 @@
+{
+  "name": "VirtualBox USB Tablet",
+  "joysticks": [
+    { "symbol": "l", "property": "x"},
+    { "symbol": "l", "property": "y"}
+  ]
+}

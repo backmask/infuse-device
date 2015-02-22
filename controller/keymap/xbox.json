@@ -1,0 +1,24 @@
+{
+  "name": "Microsoft X-Box 360 pad",
+  "joysticks": [
+    { "symbol": "l", "property": "x"},
+    { "symbol": "l", "property": "y"},
+    { "symbol": "lt", "property": "y"},
+    { "symbol": "r", "property": "x"},
+    { "symbol": "r", "property": "y"},
+    { "symbol": "rt", "property": "y"}
+  ],
+  "buttons": [
+    "a",
+    "b",
+    "x",
+    "y",
+    "lb",
+    "rb",
+    "select",
+    "start",
+    "home",
+    "l",
+    "r"
+  ]
+}

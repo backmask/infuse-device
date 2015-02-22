@@ -3,6 +3,7 @@ import pygame.locals
 import sys
 from time import sleep
 from lib.infuse import Infuse
+from keymap import keymap
 
 class Controller:
 
@@ -10,20 +11,25 @@ class Controller:
     return symbolList[idx] if len(symbolList) > idx else 's' + str(idx)
 
   def fill_defaults(self, numAxes, numButton, numCrosses):
-    joystickSymbols = ['l', 'r']
     buttonSymbols = ['a', 'b', 'x', 'y']
     crossSymbols = ['l', 'r']
 
     self.joysticks = []
+    self.joysticks_map = {}
     self.buttons = []
     self.crosses = []
 
-    for i in xrange(0, numAxes, 2):
+    for i in xrange(0, numAxes):
+      symbol = self.key_map['joysticks'][i]['symbol']
+      if symbol in self.joysticks_map:
+        continue
+
       self.joysticks.append({
-        'symbol': self.get_symbol(joystickSymbols, int(i/2)),
+        'symbol': self.key_map['joysticks'][i]['symbol'],
         'x': 0,
         'y': 0
       })
+      self.joysticks_map[symbol] = len(self.joysticks) - 1
 
     for i in xrange(0, numButton):
       self.buttons.append({
@@ -40,11 +46,10 @@ class Controller:
 
   def read_input(self, input):
     if input.type == pygame.locals.JOYAXISMOTION:
-      idx = int(input.axis / 2)
-      if input.axis % 2 == 0:
-        self.joysticks[idx]['x'] = input.value
-      else:
-        self.joysticks[idx]['y'] = input.value
+      joy_map = self.key_map['joysticks'][input.axis]
+      idx = self.joysticks_map[joy_map['symbol']]
+      prop = joy_map['property']
+      self.joysticks[idx][prop] = input.value
     elif input.type == pygame.locals.JOYBUTTONDOWN:
       self.buttons[input.button]['pressed'] = True
     elif input.type == pygame.locals.JOYBUTTONUP:
@@ -64,11 +69,22 @@ class Controller:
     if pygame.joystick.get_count() < 1:
       print 'No controller detected'
       sys.exit(0)
+    else:
+      print 'Dectected %d controller(s)' % pygame.joystick.get_count()
 
     controller = pygame.joystick.Joystick(0)
     print 'Using ' + controller.get_name()
 
+    self.key_map = keymap.map_controller(controller.get_name())
+    if not self.key_map:
+      print 'Key map not found'
+      return False
+
     controller.init()
+    if controller.get_numaxes() > len(self.key_map['joysticks']):
+      print 'Invalid keymap, expected at least %d joysticks' % controller.get_numaxes()
+      return False
+
     print 'Controller initialized, detected:'
     print '  axes: %d' % controller.get_numaxes()
     print '  buttons: %d' % controller.get_numbuttons()
@@ -78,6 +94,8 @@ class Controller:
       controller.get_numaxes(),
       controller.get_numbuttons(),
       controller.get_numhats())
+
+    return True
 
   def loop(self):
     print 'Connecting to remote'
@@ -110,5 +128,5 @@ class Controller:
     print 'Done'
 
   def run(self):
-    self.init()
-    self.loop()
+    if self.init():
+      self.loop()

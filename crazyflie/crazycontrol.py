@@ -152,7 +152,7 @@ class CrazyControl:
       self.target['gyro'][0],
       self.target['gyro'][1],
       self.target['gyro'][2],
-      self.target['thrust'] * 25000)
+      self.target['thrust'] * MAX_THRUST)
 
   def _on_telemetry_error(self, logconf, msg):
     print "Error when logging %s: %s" % (logconf.name, msg)
