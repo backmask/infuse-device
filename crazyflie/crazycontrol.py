@@ -9,6 +9,8 @@ from cflib.crazyflie.log import LogConfig
 logging.basicConfig(level=logging.INFO)
 MAX_THRUST = 65365.0
 MAX_MOTOR_SPEED = 65365.0
+MAX_BATTERY = 4.2
+MIN_BATTERY = 3.0
 
 class CrazyControl:
 
@@ -119,7 +121,7 @@ class CrazyControl:
         data['motor.m3'] / MAX_MOTOR_SPEED,
         data['motor.m4'] / MAX_MOTOR_SPEED
       ],
-      data['pm.vbat'])
+      self._interpolate(data['pm.vbat'], MIN_BATTERY, MAX_BATTERY))
 
   def _send_stabilizer(self, roll, pitch, yaw):
     self._infuse.send({
@@ -130,7 +132,7 @@ class CrazyControl:
       }
     })
 
-  def _send_telemetry(self, thrust, voltage):
+  def _send_telemetry(self, thrust, battery):
     self._infuse.send({
       'thrust': [
         { 'symbol': 'avg', 'value': thrust[0]},
@@ -139,12 +141,16 @@ class CrazyControl:
         { 'symbol': 'm3', 'value': thrust[3] },
         { 'symbol': 'm4', 'value': thrust[4] },
       ],
-      'voltage': { 'symbol': 'main', 'value': voltage }
+      'battery': { 'symbol': 'main', 'value': battery }
     })
+    print battery
 
   def _read_control(self, packet):
     if ('dataUid' in packet and packet['dataUid'] == 'flight.command'):
       self.target['thrust'] = packet['data']['thrust']
+      self.target['gyro'][0] = packet['data']['roll']
+      self.target['gyro'][1] = packet['data']['pitch']
+      self.target['gyro'][2] = packet['data']['yaw']
       self._exec_control(self.target)
 
   def _exec_control(self, control):
@@ -156,6 +162,10 @@ class CrazyControl:
 
   def _on_telemetry_error(self, logconf, msg):
     print "Error when logging %s: %s" % (logconf.name, msg)
+
+  def _interpolate(self, v, vMin, vMax):
+    vi = (v - vMin) / (vMax - vMin)
+    return min(1, max(0, vi))
 
   def _loop(self):
     try:

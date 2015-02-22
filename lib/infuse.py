@@ -47,7 +47,10 @@ class Infuse:
     return True
 
   def _parse_buffer(self):
-    decoded = json.JSONDecoder().raw_decode(self.buffer)
+    try:
+      decoded = json.JSONDecoder().raw_decode(self.buffer)
+    except:
+      pass
 
     if decoded[1] > 0:
       self.recv_callback(decoded[0])
