@@ -1,5 +1,6 @@
 from infuse import Infuse
 from time import sleep
+from signalgenerator import OscillatingSignal
 import logging
 
 import cflib.crtp
@@ -177,43 +178,39 @@ class CrazyControl:
   def run_fake(self):
     import random
     print 'Running with fake data'
-    yaw = pitch = roll = 0
-    motors = [0,random.random(),random.random(),random.random(),random.random()]
-    m_mult = [0,1,1,1,1]
-    p_mult = 1
-    battery = 0.5
-    b_mult = 1
+
     idx = 0
+    yaw = OscillatingSignal(-180, 180, random.random)
+    roll = OscillatingSignal(-180, 180, random.random)
+    pitch = OscillatingSignal(-90, 90, random.random)
+    motors = [
+      OscillatingSignal(0, 1, lambda: random.random() * 0.01),
+      OscillatingSignal(0, 1, lambda: random.random() * 0.01),
+      OscillatingSignal(0, 1, lambda: random.random() * 0.01),
+      OscillatingSignal(0, 1, lambda: random.random() * 0.01)
+    ]
+    battery = OscillatingSignal(0.01, 1, lambda: random.random() * 0.1)
+
     self._setup_remote()
 
     try:
       while True:
-        yaw = ((yaw + 180 + random.random()) % 360) - 180
-        roll = ((roll + 180 + random.random()) % 360) - 180
-        battery += random.random() * b_mult / 1000.0
-        if battery < 0.1 or battery >= 1:
-          b_mult *= -1
-          battery += b_mult * 0.001
-
-        pitch += random.random() * p_mult
-        if pitch <= -89 or pitch >= 89:
-          p_mult *= -1
-          pitch += p_mult
-
-        for i in xrange(1, len(motors)):
-          motors[i] += random.random() * m_mult[i] / 100.0
-          if motors[i] <= 0 or motors[i] >= 1:
-            m_mult[i] *= -1
-            motors[i] += m_mult[i] * 0.01
-        motors[0] = (motors[1] + motors[2] + motors[3] + motors[4]) / 4.0
+        for m in motors:
+          m.next()
 
         idx += 1
-        self._send_stabilizer(yaw, pitch, roll)
+        self._send_stabilizer(yaw.next(), pitch.next(), roll.next())
         if idx % 10 == 0:
-          self._send_telemetry(motors)
+          self._send_telemetry([
+            (motors[0].value + motors[1].value + motors[2].value + motors[3].value) / 4.0,
+            motors[0].value,
+            motors[1].value,
+            motors[2].value,
+            motors[3].value
+          ])
         if idx % 100 == 0:
           idx = 0
-          self._send_status(battery)
+          self._send_status(battery.next())
         sleep(0.01)
     except KeyboardInterrupt:
       pass
