@@ -73,17 +73,11 @@ class CrazyControl:
     lg.add_variable("motor.m2", "int32_t")
     lg.add_variable("motor.m3", "int32_t")
     lg.add_variable("motor.m4", "int32_t")
-    lg.add_variable("pm.vbat", "float")
     self._attachConfig(lg, self._on_telemetry_update)
 
-    self._cf.log.add_config(lg)
-    if lg.valid:
-      lg.data_received_cb.add_callback(self._on_telemetry_update)
-      lg.error_cb.add_callback(self._on_telemetry_error)
-      lg.start()
-      print("Done")
-    else:
-      print("Error setting up logger")
+    lg = LogConfig(name="Status", period_in_ms=1000)
+    lg.add_variable("pm.vbat", "float")
+    self._attachConfig(lg, self._on_status_update)
 
   def _setup_remote(self):
     print 'Connecting to remote'
@@ -120,8 +114,10 @@ class CrazyControl:
         data['motor.m2'] / MAX_MOTOR_SPEED,
         data['motor.m3'] / MAX_MOTOR_SPEED,
         data['motor.m4'] / MAX_MOTOR_SPEED
-      ],
-      self._interpolate(data['pm.vbat'], MIN_BATTERY, MAX_BATTERY))
+      ])
+
+  def _on_status_update(self, timestamp, data, logconf):
+    self._send_status(self._interpolate(data['pm.vbat'], MIN_BATTERY, MAX_BATTERY))
 
   def _send_stabilizer(self, roll, pitch, yaw):
     self._infuse.send({
@@ -132,7 +128,7 @@ class CrazyControl:
       }
     })
 
-  def _send_telemetry(self, thrust, battery):
+  def _send_telemetry(self, thrust):
     self._infuse.send({
       'thrust': [
         { 'symbol': 'avg', 'value': thrust[0]},
@@ -140,10 +136,13 @@ class CrazyControl:
         { 'symbol': 'm2', 'value': thrust[2] },
         { 'symbol': 'm3', 'value': thrust[3] },
         { 'symbol': 'm4', 'value': thrust[4] },
-      ],
+      ]
+    })
+
+  def _send_status(self, battery):
+    self._infuse.send({
       'battery': { 'symbol': 'main', 'value': battery }
     })
-    print battery
 
   def _read_control(self, packet):
     if ('dataUid' in packet and packet['dataUid'] == 'flight.command'):
@@ -182,13 +181,19 @@ class CrazyControl:
     motors = [0,random.random(),random.random(),random.random(),random.random()]
     m_mult = [0,1,1,1,1]
     p_mult = 1
-    volt = 0
+    battery = 0.5
+    b_mult = 1
+    idx = 0
     self._setup_remote()
 
     try:
       while True:
         yaw = ((yaw + 180 + random.random()) % 360) - 180
         roll = ((roll + 180 + random.random()) % 360) - 180
+        battery += random.random() * b_mult / 1000.0
+        if battery < 0.1 or battery >= 1:
+          b_mult *= -1
+          battery += b_mult * 0.001
 
         pitch += random.random() * p_mult
         if pitch <= -89 or pitch >= 89:
@@ -202,9 +207,14 @@ class CrazyControl:
             motors[i] += m_mult[i] * 0.01
         motors[0] = (motors[1] + motors[2] + motors[3] + motors[4]) / 4.0
 
+        idx += 1
         self._send_stabilizer(yaw, pitch, roll)
-        self._send_telemetry(motors, volt)
-        sleep(0.02)
+        if idx % 10 == 0:
+          self._send_telemetry(motors)
+        if idx % 100 == 0:
+          idx = 0
+          self._send_status(battery)
+        sleep(0.01)
     except KeyboardInterrupt:
       pass
 
