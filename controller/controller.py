@@ -5,21 +5,21 @@ from time import sleep
 from lib.infuse import Infuse
 from keymap import keymap
 
-class Controller:
+class Controller(object):
 
-  def get_symbol(self, symbolList, idx):
-    return symbolList[idx] if len(symbolList) > idx else 's' + str(idx)
+  def get_symbol(self, symbol_list, idx):
+    return symbol_list[idx] if len(symbol_list) > idx else 's' + str(idx)
 
-  def fill_defaults(self, numAxes, numButton, numCrosses):
-    buttonSymbols = ['a', 'b', 'x', 'y']
-    crossSymbols = ['l', 'r']
+  def fill_defaults(self, num_axes, num_buttons, num_crosses):
+    button_symbols = ['a', 'b', 'x', 'y']
+    cross_symbols = ['l', 'r']
 
     self.joysticks = []
     self.joysticks_map = {}
     self.buttons = []
     self.crosses = []
 
-    for i in xrange(0, numAxes):
+    for i in xrange(0, num_axes):
       symbol = self.key_map['joysticks'][i]['symbol']
       if symbol in self.joysticks_map:
         continue
@@ -31,15 +31,15 @@ class Controller:
       })
       self.joysticks_map[symbol] = len(self.joysticks) - 1
 
-    for i in xrange(0, numButton):
+    for i in xrange(0, num_buttons):
       self.buttons.append({
-        'symbol': self.get_symbol(buttonSymbols, i),
+        'symbol': self.get_symbol(button_symbols, i),
         'pressed': False
       })
 
-    for i in xrange(0, numCrosses):
+    for i in xrange(0, num_crosses):
       self.crosses.append({
-        'symbol': self.get_symbol(crossSymbols, i),
+        'symbol': self.get_symbol(cross_symbols, i),
         'x': 0,
         'y': 0
       })

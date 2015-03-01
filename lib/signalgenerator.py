@@ -1,4 +1,4 @@
-class OscillatingSignal:
+class OscillatingSignal(object):
 
   def __init__(self, begin, end, step):
     self.speed = 1

@@ -13,13 +13,14 @@ MAX_MOTOR_SPEED = 65365.0
 MAX_BATTERY = 4.2
 MIN_BATTERY = 3.0
 
-class CrazyControl:
+class CrazyControl(object):
 
   def __init__(self):
     self.target = {
-      'gyro': [0,0,0],
+      'gyro': [0, 0, 0],
       'thrust': 0
     }
+    self._cf = False
 
   def _init(self):
     print 'Initializing'
@@ -146,7 +147,7 @@ class CrazyControl:
     })
 
   def _read_control(self, packet):
-    if ('dataUid' in packet and packet['dataUid'] == 'flight.command'):
+    if 'dataUid' in packet and packet['dataUid'] == 'flight.command':
       self.target['thrust'] = packet['data']['thrust']
       self.target['gyro'][0] = packet['data']['roll']
       self.target['gyro'][1] = packet['data']['pitch']
@@ -163,9 +164,9 @@ class CrazyControl:
   def _on_telemetry_error(self, logconf, msg):
     print "Error when logging %s: %s" % (logconf.name, msg)
 
-  def _interpolate(self, v, vMin, vMax):
-    vi = (v - vMin) / (vMax - vMin)
-    return min(1, max(0, vi))
+  def _interpolate(self, v, v_min, v_max):
+    v_i = (v - v_min) / (v_max - v_min)
+    return min(1, max(0, v_i))
 
   def _loop(self):
     try:
@@ -195,8 +196,8 @@ class CrazyControl:
 
     try:
       while True:
-        for m in motors:
-          m.next()
+        for motor in motors:
+          motor.next()
 
         idx += 1
         self._send_stabilizer(yaw.next(), pitch.next(), roll.next())

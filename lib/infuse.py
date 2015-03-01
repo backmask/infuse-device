@@ -2,19 +2,20 @@ import json
 import socket
 from threading import Thread
 
-class Infuse:
+class Infuse(object):
 
   def __init__(self, address, description, recv_callback):
     description['method'] = '/bootstrap/device'
-    self.address = address;
-    self.bootstrapMessage = json.JSONEncoder().encode(description)
+    self.address = address
+    self.bootstrap_message = json.JSONEncoder().encode(description)
     self.buffer = False
+    self.socket = False
     self.recv_callback = recv_callback
-    self.thread = Thread(target = self._listen)
+    self.thread = Thread(target=self._listen)
 
   def connect(self):
     self.socket = socket.create_connection(self.address, 1000)
-    self.socket.send(self.bootstrapMessage)
+    self.socket.send(self.bootstrap_message)
     self.thread.start()
 
   def disconnect(self):
@@ -49,7 +50,7 @@ class Infuse:
   def _parse_buffer(self):
     try:
       decoded = json.JSONDecoder().raw_decode(self.buffer)
-    except:
+    except ValueError:
       pass
 
     if decoded[1] > 0:
