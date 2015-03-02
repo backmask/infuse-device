@@ -68,6 +68,7 @@ class CrazyControl(object):
     lg.add_variable("stabilizer.roll", "float")
     lg.add_variable("stabilizer.pitch", "float")
     lg.add_variable("stabilizer.yaw", "float")
+    lg.add_variable("baro.aslLong", "float")
     self._attachConfig(lg, self._on_stabilizer_update)
 
     lg = LogConfig(name="Stabilizer", period_in_ms=100)
@@ -108,7 +109,8 @@ class CrazyControl(object):
     self._send_stabilizer(
       data['stabilizer.roll'],
       data['stabilizer.pitch'],
-      data['stabilizer.yaw'])
+      data['stabilizer.yaw'],
+      data['baro.aslLong'])
 
   def _on_telemetry_update(self, timestamp, data, logconf):
     self._send_telemetry([
@@ -122,12 +124,15 @@ class CrazyControl(object):
   def _on_status_update(self, timestamp, data, logconf):
     self._send_status(self._interpolate(data['pm.vbat'], MIN_BATTERY, MAX_BATTERY))
 
-  def _send_stabilizer(self, roll, pitch, yaw):
+  def _send_stabilizer(self, roll, pitch, yaw, barometer):
     self._infuse.send({
       'gyroscope': {
         'roll': roll,
         'pitch': pitch,
         'yaw': yaw,
+      },
+      'barometer.asl': {
+        'value': barometer
       }
     })
 
@@ -165,7 +170,8 @@ class CrazyControl(object):
   def _on_telemetry_error(self, logconf, msg):
     print "Error when logging %s: %s" % (logconf.name, msg)
 
-  def _interpolate(self, v, v_min, v_max):
+  @classmethod
+  def _interpolate(cls, v, v_min, v_max):
     v_i = (v - v_min) / (v_max - v_min)
     return min(1, max(0, v_i))
 
@@ -192,7 +198,9 @@ class CrazyControl(object):
       OscillatingSignal(0, 1, lambda: random.random() * 0.01)
     ]
     battery = OscillatingSignal(0.01, 1, lambda: random.random() * 0.1)
+    barometer_asl = OscillatingSignal(120, 122, lambda: random.random() * 0.1)
 
+    self._cf = FakeCommander()
     self._setup_remote()
 
     try:
@@ -201,7 +209,14 @@ class CrazyControl(object):
           motor.next()
 
         idx += 1
-        self._send_stabilizer(yaw.next(), pitch.next(), roll.next())
+
+        self._send_stabilizer(
+          yaw.next(),
+          pitch.next(),
+          roll.next(),
+          barometer_asl.next()
+        )
+
         if idx % 10 == 0:
           self._send_telemetry([
             (motors[0].value + motors[1].value + motors[2].value + motors[3].value) / 4.0,
@@ -216,10 +231,10 @@ class CrazyControl(object):
         sleep(0.01)
     except KeyboardInterrupt:
       pass
-
-    print 'Disconnecting'
-    self._infuse.disconnect()
-    print 'Done'
+    finally:
+      print 'Disconnecting'
+      self._infuse.disconnect()
+      print 'Done'
 
   def run(self):
     self._init()
@@ -234,3 +249,14 @@ class CrazyControl(object):
     print 'Disconnecting'
     self._cf.close_link()
     self._infuse.disconnect()
+
+class FakeCommander(object):
+
+  def __init__(self):
+    self.commander =  type('command', (object,), {
+      'send_setpoint': self._exec_cmd
+    })
+
+  @classmethod
+  def _exec_cmd(cls, roll, pitch, yaw, thrust):
+    print 'roll:%f, pitch:%f, yaw:%f, thrust:%f' % (roll, pitch, yaw, thrust)
