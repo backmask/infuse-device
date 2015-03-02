@@ -51,7 +51,7 @@ class Infuse(object):
     try:
       decoded = json.JSONDecoder().raw_decode(self.buffer)
     except ValueError:
-      pass
+      return
 
     if decoded[1] > 0:
       self.recv_callback(decoded[0])

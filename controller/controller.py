@@ -7,11 +7,17 @@ from keymap import keymap
 
 class Controller(object):
 
+  def __init__(self):
+    self.key_map = False
+    self.joysticks = False
+    self.joysticks_map = False
+    self.buttons = False
+    self.crosses = False
+
   def get_symbol(self, symbol_list, idx):
     return symbol_list[idx] if len(symbol_list) > idx else 's' + str(idx)
 
   def fill_defaults(self, num_axes, num_buttons, num_crosses):
-    button_symbols = ['a', 'b', 'x', 'y']
     cross_symbols = ['l', 'r']
 
     self.joysticks = []
@@ -33,7 +39,7 @@ class Controller(object):
 
     for i in xrange(0, num_buttons):
       self.buttons.append({
-        'symbol': self.get_symbol(button_symbols, i),
+        'symbol': self.key_map['buttons'][i],
         'pressed': False
       })
 
@@ -57,8 +63,8 @@ class Controller(object):
     else:
       print 'Event not handled ' + str(input.type)
 
-  def recv_callback(self, d):
-    print d
+  def recv_callback(self, data):
+    print data
 
   def init(self):
     print 'Initializing'
@@ -109,8 +115,8 @@ class Controller(object):
 
     try:
       while True:
-        for e in pygame.event.get():
-          self.read_input(e)
+        for evt in pygame.event.get():
+          self.read_input(evt)
 
         infuse.send({
           'joystick': self.joysticks,

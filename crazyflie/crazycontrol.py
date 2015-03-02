@@ -31,7 +31,8 @@ class CrazyControl(object):
     self._cf.connection_lost.add_callback(self._connection_lost)
     cflib.crtp.init_drivers(enable_debug_driver=False)
 
-  def _get_device(self):
+  @classmethod
+  def _get_device(cls):
     print "Scanning interfaces"
     available = cflib.crtp.scan_interfaces()
     if len(available) == 0:
