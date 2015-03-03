@@ -71,7 +71,14 @@ class CrazyControl(object):
     lg.add_variable("baro.aslLong", "float")
     self._attachConfig(lg, self._on_stabilizer_update)
 
-    lg = LogConfig(name="Stabilizer", period_in_ms=100)
+    lg = LogConfig(name="Acceleration", period_in_ms=10)
+    lg.add_variable("acc.x", "float")
+    lg.add_variable("acc.y", "float")
+    lg.add_variable("acc.z", "float")
+    lg.add_variable("baro.aslLong", "float")
+    self._attachConfig(lg, self._on_acceleration_update)
+
+    lg = LogConfig(name="Thrust", period_in_ms=100)
     lg.add_variable("stabilizer.thrust", "uint16_t")
     lg.add_variable("motor.m1", "int32_t")
     lg.add_variable("motor.m2", "int32_t")
@@ -112,6 +119,12 @@ class CrazyControl(object):
       data['stabilizer.yaw'],
       data['baro.aslLong'])
 
+  def _on_acceleration_update(self, timestamp, data, logconf):
+    self._send_acceleration(
+      data['acc.x'],
+      data['acc.y'],
+      data['acc.z'])
+
   def _on_telemetry_update(self, timestamp, data, logconf):
     self._send_telemetry([
         data['stabilizer.thrust'] / MAX_THRUST,
@@ -133,6 +146,15 @@ class CrazyControl(object):
       },
       'barometer.asl': {
         'value': barometer
+      }
+    })
+
+  def _send_acceleration(self, acc_x, acc_y, acc_z):
+    self._infuse.send({
+      'acceleration': {
+        'x': acc_x,
+        'y': acc_y,
+        'z': acc_z
       }
     })
 
@@ -191,6 +213,9 @@ class CrazyControl(object):
     yaw = OscillatingSignal(-180, 180, random.random)
     roll = OscillatingSignal(-180, 180, random.random)
     pitch = OscillatingSignal(-90, 90, random.random)
+    acc_x = OscillatingSignal(-1, 1, lambda: random.random() * 0.01)
+    acc_y = OscillatingSignal(-1, 1, lambda: random.random() * 0.01)
+    acc_z = OscillatingSignal(-1, 1, lambda: random.random() * 0.01)
     motors = [
       OscillatingSignal(0, 1, lambda: random.random() * 0.01),
       OscillatingSignal(0, 1, lambda: random.random() * 0.01),
@@ -215,6 +240,12 @@ class CrazyControl(object):
           pitch.next(),
           roll.next(),
           barometer_asl.next()
+        )
+
+        self._send_acceleration(
+          acc_x.next(),
+          acc_y.next(),
+          acc_z.next()
         )
 
         if idx % 10 == 0:
