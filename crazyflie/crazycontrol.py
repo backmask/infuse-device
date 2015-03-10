@@ -60,7 +60,7 @@ class CrazyControl(object):
       lg.error_cb.add_callback(self._on_telemetry_error)
       lg.start()
     else:
-      print("Error setting up logger")
+      print "Error setting up logger"
 
   def _setup_logger(self):
     print "Setting up logger"
@@ -114,6 +114,7 @@ class CrazyControl(object):
 
   def _on_stabilizer_update(self, timestamp, data, logconf):
     self._send_stabilizer(
+      timestamp,
       data['stabilizer.roll'],
       data['stabilizer.pitch'],
       data['stabilizer.yaw'],
@@ -137,7 +138,7 @@ class CrazyControl(object):
   def _on_status_update(self, timestamp, data, logconf):
     self._send_status(self._interpolate(data['pm.vbat'], MIN_BATTERY, MAX_BATTERY))
 
-  def _send_stabilizer(self, roll, pitch, yaw, barometer):
+  def _send_stabilizer(self, timestamp, roll, pitch, yaw, barometer):
     self._infuse.send({
       'gyroscope': {
         'roll': roll,
@@ -145,7 +146,8 @@ class CrazyControl(object):
         'yaw': yaw,
       },
       'barometer.asl': {
-        'value': barometer
+        'value': barometer,
+        'timestamp': timestamp
       }
     })
 
@@ -209,6 +211,7 @@ class CrazyControl(object):
     import random
     print 'Running with fake data'
 
+    timestamp = 0
     idx = 0
     yaw = OscillatingSignal(-180, 180, random.random)
     roll = OscillatingSignal(-180, 180, random.random)
@@ -234,8 +237,10 @@ class CrazyControl(object):
           motor.next()
 
         idx += 1
+        timestamp += 1000
 
         self._send_stabilizer(
+          timestamp,
           yaw.next(),
           pitch.next(),
           roll.next(),
