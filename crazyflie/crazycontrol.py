@@ -226,7 +226,7 @@ class CrazyControl(object):
       OscillatingSignal(0, 1, lambda: random.random() * 0.01)
     ]
     battery = OscillatingSignal(0.01, 1, lambda: random.random() * 0.1)
-    barometer_asl = OscillatingSignal(120, 122, lambda: random.random() * 0.1)
+    barometer_asl = OscillatingSignal(-120, -110, lambda: random.random() * 0.1)
 
     self._cf = FakeCommander()
     self._setup_remote()
