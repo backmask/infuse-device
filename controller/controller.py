@@ -106,6 +106,7 @@ class Controller(object):
 
     return True
 
+  print('')
   def loop(self):
     print('Connecting to remote')
     infuse = Infuse(('localhost', 2946), {

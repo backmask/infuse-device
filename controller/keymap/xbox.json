@@ -1,5 +1,5 @@
 {
-  "name": "Microsoft X-Box 360 pad",
+  "name": ["Microsoft X-Box 360 pad", "XBOX 360 For Windows (Controller)"],
   "joysticks": [
     { "symbol": "l", "property": "x"},
     { "symbol": "l", "property": "y"},

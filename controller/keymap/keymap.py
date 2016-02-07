@@ -10,5 +10,5 @@ def map_controller(controllerName):
       json_file = open(fpath)
       json_parsed = json.load(json_file)
       json_file.close()
-      if (json_parsed['name'] == controllerName):
+      if controllerName in json_parsed['name']:
         return json_parsed
