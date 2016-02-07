@@ -3,5 +3,12 @@
   "joysticks": [
     { "symbol": "l", "property": "x"},
     { "symbol": "l", "property": "y"}
+  ],
+  "buttons": [
+    "a",
+    "b",
+    "x",
+    "y",
+    "select"
   ]
 }

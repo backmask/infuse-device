@@ -77,8 +77,11 @@ class Controller(object):
       sys.exit(0)
     else:
       print 'Dectected %d controller(s)' % pygame.joystick.get_count()
+      for i in xrange(0, pygame.joystick.get_count()):
+        print '  - ' + pygame.joystick.Joystick(i).get_name()
 
     controller = pygame.joystick.Joystick(0)
+    print ''
     print 'Using ' + controller.get_name()
 
     self.key_map = keymap.map_controller(controller.get_name())
