@@ -106,10 +106,9 @@ class Controller(object):
 
     return True
 
-  print('')
   def loop(self):
-    print('Connecting to remote')
-    infuse = Infuse(('localhost', 2946), {
+    print('')
+    infuse = Infuse(('server', 2946), {
         'name': 'Wii U controller',
         'family': 'controller',
         'version': 'remote-1.0.0',

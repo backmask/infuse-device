@@ -2,13 +2,15 @@ import json
 import socket
 from threading import Thread
 from time import sleep
+import traceback
 
 class Infuse(object):
 
   def __init__(self, address, description, recv_callback):
     description['method'] = '/bootstrap/device'
     self.address = address
-    self.bootstrap_message = json.JSONEncoder().encode(description)
+    #self.bootstrap_message = json.JSONEncoder().encode(description)
+    self.bootstrap_message = description
     self.buffer = False
     self.socket = False
     self.user_disconnected = False
@@ -30,7 +32,8 @@ class Infuse(object):
   def send(self, data):
     if self.socket:
       try:
-        self.socket.send(json.JSONEncoder().encode(data))
+        for chunk in json.JSONEncoder().iterencode(data):
+          self.socket.send(chunk.encode('utf-8'))
       except socket.error:
         pass
 
@@ -39,12 +42,13 @@ class Infuse(object):
       print('Connecting')
       try:
         self.socket = socket.create_connection(self.address, 1000)
-        self.socket.send(self.bootstrap_message)
-      except:
-        print('Failed, retrying')
+        self.send(self.bootstrap_message)
+      except Exception as e:
+        traceback.print_exc()
         self.socket = False
         sleep(1)
 
+      print('Connected')
       while self._recv():
         pass
 
@@ -75,7 +79,7 @@ class Infuse(object):
 
   def _parse_buffer(self):
     try:
-      decoded = json.JSONDecoder().raw_decode(self.buffer)
+      decoded = json.JSONDecoder().raw_decode(str(self.buffer, 'UTF-8'))
     except ValueError:
       return
 
