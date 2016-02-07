@@ -114,8 +114,8 @@ class Toc:
     def get_element_by_id(self, ident):
         """Get a TocElement element identified by index number from the
         container."""
-        for group in self.toc.keys():
-            for name in self.toc[group].keys():
+        for group in list(self.toc.keys()):
+            for name in list(self.toc[group].keys()):
                 if self.toc[group][name].ident == ident:
                     return self.toc[group][name]
         return None

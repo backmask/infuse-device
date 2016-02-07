@@ -43,7 +43,7 @@ from cflib.crtp.crtpstack import CRTPPacket, CRTPPort
 from .toc import Toc, TocFetcher
 from threading import Thread, Lock
 
-from Queue import Queue
+from queue import Queue
 
 import logging
 logger = logging.getLogger(__name__)

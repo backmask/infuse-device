@@ -7,7 +7,7 @@ class OscillatingSignal(object):
     self.step = step
     self.value = begin
 
-  def next(self):
+  def __next__(self):
     if hasattr(self.step, '__call__'):
       self.value += self.step() * self.speed
     else:
@@ -23,4 +23,4 @@ class OscillatingSignal(object):
     return self.value
 
   def __repr__(self):
-    return self.next()
+    return next(self)

@@ -44,7 +44,7 @@ from threading import Thread
 from .crtpdriver import CRTPDriver
 from .crtpstack import CRTPPacket, CRTPPort
 from .exceptions import WrongUriType
-import Queue
+import queue
 import re
 import time
 import struct
@@ -269,7 +269,7 @@ class DebugDriver (CRTPDriver):
 
         self.fakeflash = {}
         self._random_answer_delay = True
-        self.queue = Queue.Queue()
+        self.queue = queue.Queue()
         self._packet_handler = _PacketHandlingThread(self.queue,
                                                      self.fakeLogToc,
                                                      self.fakeParamToc,
@@ -357,17 +357,17 @@ class DebugDriver (CRTPDriver):
         if time == 0:
             try:
                 return self.queue.get(False)
-            except Queue.Empty:
+            except queue.Empty:
                 return None
         elif time < 0:
             try:
                 return self.queue.get(True)
-            except Queue.Empty:
+            except queue.Empty:
                 return None
         else:
             try:
                 return self.queue.get(True, time)
-            except Queue.Empty:
+            except queue.Empty:
                 return None
 
     def send_packet(self, pk):
@@ -390,7 +390,7 @@ class _PacketHandlingThread(Thread):
         self.fakeLogToc = fake_log_toc
         self.fakeParamToc = fake_param_toc
         self._fake_mems = fake_mems
-        self._in_queue = Queue.Queue()
+        self._in_queue = queue.Queue()
 
         self.inhibitAnswers = False
         self.doIncompleteLogTOC = False

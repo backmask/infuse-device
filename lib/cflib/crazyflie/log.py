@@ -296,7 +296,7 @@ class LogTocElement:
     @staticmethod
     def get_id_from_cstring(name):
         """Return variable type id given the C-storage name"""
-        for key in LogTocElement.types.keys():
+        for key in list(LogTocElement.types.keys()):
             if (LogTocElement.types[key][0] == name):
                 return key
         raise KeyError("Type [%s] not found in LogTocElement.types!" % name)

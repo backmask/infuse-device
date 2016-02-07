@@ -3,7 +3,7 @@ import pygame.locals
 import sys
 from time import sleep
 from lib.infuse import Infuse
-from keymap import keymap
+from .keymap import keymap
 
 class Controller(object):
 
@@ -25,7 +25,7 @@ class Controller(object):
     self.buttons = []
     self.crosses = []
 
-    for i in xrange(0, num_axes):
+    for i in range(0, num_axes):
       symbol = self.key_map['joysticks'][i]['symbol']
       if symbol in self.joysticks_map:
         continue
@@ -37,13 +37,13 @@ class Controller(object):
       })
       self.joysticks_map[symbol] = len(self.joysticks) - 1
 
-    for i in xrange(0, num_buttons):
+    for i in range(0, num_buttons):
       self.buttons.append({
         'symbol': self.key_map['buttons'][i],
         'pressed': False
       })
 
-    for i in xrange(0, num_crosses):
+    for i in range(0, num_crosses):
       self.crosses.append({
         'symbol': self.get_symbol(cross_symbols, i),
         'x': 0,
@@ -61,43 +61,43 @@ class Controller(object):
     elif input.type == pygame.locals.JOYBUTTONUP:
       self.buttons[input.button]['pressed'] = False
     else:
-      print 'Event not handled ' + str(input.type)
+      print('Event not handled ' + str(input.type))
 
   def recv_callback(self, data):
-    print data
+    print(data)
 
   def init(self):
-    print 'Initializing'
+    print('Initializing')
     pygame.init()
     pygame.joystick.quit()
     pygame.joystick.init()
 
     if pygame.joystick.get_count() < 1:
-      print 'No controller detected'
+      print('No controller detected')
       sys.exit(0)
     else:
-      print 'Dectected %d controller(s)' % pygame.joystick.get_count()
-      for i in xrange(0, pygame.joystick.get_count()):
-        print '  - ' + pygame.joystick.Joystick(i).get_name()
+      print('Dectected %d controller(s)' % pygame.joystick.get_count())
+      for i in range(0, pygame.joystick.get_count()):
+        print('  - ' + pygame.joystick.Joystick(i).get_name())
 
     controller = pygame.joystick.Joystick(0)
-    print ''
-    print 'Using ' + controller.get_name()
+    print('')
+    print('Using ' + controller.get_name())
 
     self.key_map = keymap.map_controller(controller.get_name())
     if not self.key_map:
-      print 'Key map not found'
+      print('Key map not found')
       return False
 
     controller.init()
     if controller.get_numaxes() > len(self.key_map['joysticks']):
-      print 'Invalid keymap, expected at least %d joysticks' % controller.get_numaxes()
+      print('Invalid keymap, expected at least %d joysticks' % controller.get_numaxes())
       return False
 
-    print 'Controller initialized, detected:'
-    print '  axes: %d' % controller.get_numaxes()
-    print '  buttons: %d' % controller.get_numbuttons()
-    print '  crosses: %d' % controller.get_numhats()
+    print('Controller initialized, detected:')
+    print('  axes: %d' % controller.get_numaxes())
+    print('  buttons: %d' % controller.get_numbuttons())
+    print('  crosses: %d' % controller.get_numhats())
 
     self.fill_defaults(
       controller.get_numaxes(),
@@ -107,7 +107,7 @@ class Controller(object):
     return True
 
   def loop(self):
-    print 'Connecting to remote'
+    print('Connecting to remote')
     infuse = Infuse(('localhost', 2946), {
         'name': 'Wii U controller',
         'family': 'controller',
@@ -131,10 +131,10 @@ class Controller(object):
     except KeyboardInterrupt:
       pass
 
-    print 'Disconnecting'
+    print('Disconnecting')
     infuse.disconnect()
 
-    print 'Done'
+    print('Done')
 
   def run(self):
     if self.init():

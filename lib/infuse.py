@@ -36,12 +36,12 @@ class Infuse(object):
 
   def _listen(self):
     while True:
-      print 'Connecting'
+      print('Connecting')
       try:
         self.socket = socket.create_connection(self.address, 1000)
         self.socket.send(self.bootstrap_message)
       except:
-        print 'Failed, retrying'
+        print('Failed, retrying')
         self.socket = False
         sleep(1)
 

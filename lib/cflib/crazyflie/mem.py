@@ -40,6 +40,7 @@ from cflib.crtp.crtpstack import CRTPPacket, CRTPPort
 from cflib.utils.callbacks import Caller
 from binascii import crc32
 import binascii
+from functools import reduce
 
 # Channels used for the logging port
 CHAN_INFO = 0
@@ -115,7 +116,7 @@ class I2CElement(MemoryElement):
                     self._update_finished_cb = None
 
     def _checksum256(self, st):
-        return reduce(lambda x, y: x + y, map(ord, st)) % 256
+        return reduce(lambda x, y: x + y, list(map(ord, st))) % 256
 
     def write_data(self, write_finished_cb):
         data = (0x00, self.elements["radio_channel"], self.elements["radio_speed"],
@@ -174,7 +175,7 @@ class OWElement(MemoryElement):
         self._write_finished_cb = None
 
         self._rev_element_mapping = {}
-        for key in OWElement.element_mapping.keys():
+        for key in list(OWElement.element_mapping.keys()):
             self._rev_element_mapping[OWElement.element_mapping[key]] = key
 
     def new_data(self, mem, addr, data):
@@ -236,8 +237,8 @@ class OWElement(MemoryElement):
 
         # Now generate the elements part
         elem = ""
-        logger.info(self.elements.keys())
-        for element in reversed(self.elements.keys()):
+        logger.info(list(self.elements.keys()))
+        for element in reversed(list(self.elements.keys())):
             elem_string = self.elements[element]
             #logger.info(">>>> {}".format(elem_string))
             key_encoding = self._rev_element_mapping[element]

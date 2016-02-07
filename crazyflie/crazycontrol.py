@@ -23,7 +23,7 @@ class CrazyControl(object):
     self._cf = False
 
   def _init(self):
-    print 'Initializing'
+    print('Initializing')
     self._cf = Crazyflie()
     self._cf.connected.add_callback(self._connected)
     self._cf.disconnected.add_callback(self._disconnected)
@@ -33,24 +33,24 @@ class CrazyControl(object):
 
   @classmethod
   def _get_device(cls):
-    print "Scanning interfaces"
+    print("Scanning interfaces")
     available = cflib.crtp.scan_interfaces()
     if len(available) == 0:
       return False
 
-    print "Crazyflies found:"
+    print("Crazyflies found:")
     for i in available:
-      print i[0]
+      print(i[0])
 
     return available[0][0]
 
   def _attach(self, link_uri):
-    print 'Attaching to %s' % link_uri
+    print('Attaching to %s' % link_uri)
     self._cf.open_link(link_uri)
     self.is_connected = True
 
   def _connected(self, link_uri):
-    print "Connected to %s" % link_uri
+    print("Connected to %s" % link_uri)
     self._setup_logger()
 
   def _attachConfig(self, lg, update_callback):
@@ -60,10 +60,10 @@ class CrazyControl(object):
       lg.error_cb.add_callback(self._on_telemetry_error)
       lg.start()
     else:
-      print "Error setting up logger"
+      print("Error setting up logger")
 
   def _setup_logger(self):
-    print "Setting up logger"
+    print("Setting up logger")
     lg = LogConfig(name="Stabilizer", period_in_ms=10)
     lg.add_variable("stabilizer.roll", "float")
     lg.add_variable("stabilizer.pitch", "float")
@@ -91,7 +91,7 @@ class CrazyControl(object):
     self._attachConfig(lg, self._on_status_update)
 
   def _setup_remote(self):
-    print 'Connecting to remote'
+    print('Connecting to remote')
     self._infuse = Infuse(('localhost', 2946), {
         'name': 'Crazyflie',
         'family': 'flight.quadcopter',
@@ -102,14 +102,14 @@ class CrazyControl(object):
     self._infuse.connect()
 
   def _connection_failed(self, link_uri, msg):
-    print "Connection to %s failed: %s" % (link_uri, msg)
+    print("Connection to %s failed: %s" % (link_uri, msg))
     self.is_connected = False
 
   def _connection_lost(self, link_uri, msg):
-    print "Connection to %s lost: %s" % (link_uri, msg)
+    print("Connection to %s lost: %s" % (link_uri, msg))
 
   def _disconnected(self, link_uri):
-    print "Disconnected from %s" % link_uri
+    print("Disconnected from %s" % link_uri)
     self.is_connected = False
 
   def _on_stabilizer_update(self, timestamp, data, logconf):
@@ -192,7 +192,7 @@ class CrazyControl(object):
       self.target['thrust'] * MAX_THRUST)
 
   def _on_telemetry_error(self, logconf, msg):
-    print "Error when logging %s: %s" % (logconf.name, msg)
+    print("Error when logging %s: %s" % (logconf.name, msg))
 
   @classmethod
   def _interpolate(cls, v, v_min, v_max):
@@ -205,11 +205,11 @@ class CrazyControl(object):
         sleep(3)
     except KeyboardInterrupt:
       pass
-    print 'Done'
+    print('Done')
 
   def run_fake(self):
     import random
-    print 'Running with fake data'
+    print('Running with fake data')
 
     timestamp = 0
     idx = 0
@@ -234,23 +234,23 @@ class CrazyControl(object):
     try:
       while True:
         for motor in motors:
-          motor.next()
+          next(motor)
 
         idx += 1
         timestamp += 1000
 
         self._send_stabilizer(
           timestamp,
-          yaw.next(),
-          pitch.next(),
-          roll.next(),
-          barometer_asl.next()
+          next(yaw),
+          next(pitch),
+          next(roll),
+          next(barometer_asl)
         )
 
         self._send_acceleration(
-          acc_x.next(),
-          acc_y.next(),
-          acc_z.next()
+          next(acc_x),
+          next(acc_y),
+          next(acc_z)
         )
 
         if idx % 10 == 0:
@@ -263,26 +263,26 @@ class CrazyControl(object):
           ])
         if idx % 100 == 0:
           idx = 0
-          self._send_status(battery.next())
+          self._send_status(next(battery))
         sleep(0.01)
     except KeyboardInterrupt:
       pass
     finally:
-      print 'Disconnecting'
+      print('Disconnecting')
       self._infuse.disconnect()
-      print 'Done'
+      print('Done')
 
   def run(self):
     self._init()
     device = self._get_device()
     if device == False:
-      print 'No device found, exiting'
+      print('No device found, exiting')
       return
     self._setup_remote()
     self._attach(device)
     self._loop()
 
-    print 'Disconnecting'
+    print('Disconnecting')
     self._cf.close_link()
     self._infuse.disconnect()
 
@@ -295,4 +295,4 @@ class FakeCommander(object):
 
   @classmethod
   def _exec_cmd(cls, roll, pitch, yaw, thrust):
-    print 'roll:%f, pitch:%f, yaw:%f, thrust:%f' % (roll, pitch, yaw, thrust)
+    print('roll:%f, pitch:%f, yaw:%f, thrust:%f' % (roll, pitch, yaw, thrust))

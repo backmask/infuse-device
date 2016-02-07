@@ -236,7 +236,7 @@ class Cloader:
                 if self.protocol_version != 1:
                     return True
                 # Set radio link to a random address
-                addr = [0xbc] + map(lambda x: random.randint(0, 255), range(4))
+                addr = [0xbc] + [random.randint(0, 255) for x in range(4)]
                 return self._set_address(addr)
         return False
 

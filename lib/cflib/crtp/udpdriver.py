@@ -36,7 +36,7 @@ __all__ = ['UdpDriver']
 from .crtpdriver import CRTPDriver
 from .crtpstack import CRTPPacket
 from .exceptions import WrongUriType
-import Queue
+import queue
 import re
 import struct
 from socket import socket
@@ -51,7 +51,7 @@ class UdpDriver(CRTPDriver):
         if not re.search("^udp://", uri):
             raise WrongUriType("Not an UDP URI")
 
-        self.queue = Queue.Queue()
+        self.queue = queue.Queue()
         self.socket = socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.addr = ("localhost", 7777)
         self.socket.connect(self.addr)
@@ -77,7 +77,7 @@ class UdpDriver(CRTPDriver):
                     return self.rxqueue.get(True, 10)
             else:
                 return self.rxqueue.get(True, time)
-        except Queue.Empty:
+        except queue.Empty:
             return None
 
     def send_packet(self, pk):
