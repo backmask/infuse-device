@@ -28,12 +28,7 @@
 
 """Scans and creates communication interfaces."""
 
-__author__ = 'Bitcraze AB'
-__all__ = []
-
-
 import logging
-logger = logging.getLogger(__name__)
 
 from .radiodriver import RadioDriver
 from .udpdriver import UdpDriver
@@ -41,6 +36,12 @@ from .serialdriver import SerialDriver
 from .debugdriver import DebugDriver
 from .usbdriver import UsbDriver
 from .exceptions import WrongUriType
+
+__author__ = 'Bitcraze AB'
+__all__ = []
+
+logger = logging.getLogger(__name__)
+
 
 DRIVERS = [RadioDriver, SerialDriver, UdpDriver, DebugDriver, UsbDriver]
 INSTANCES = []
@@ -56,14 +57,14 @@ def init_drivers(enable_debug_driver=False):
             continue
 
 
-def scan_interfaces():
+def scan_interfaces(address=None):
     """ Scan all the interfaces for available Crazyflies """
     available = []
     found = []
     for instance in INSTANCES:
         logger.debug("Scanning: %s", instance)
         try:
-            found = instance.scan_interface()
+            found = instance.scan_interface(address)
             available += found
         except Exception:
             raise

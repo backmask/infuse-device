@@ -29,7 +29,7 @@
 """
 Exception used when the URI is not for the current driver
 (ie. radio:// for the serial driver ...)
-It basically means that an oser driver could do the job
+It basically means that an other driver could do the job
 It does NOT means that the URI is good or bad
 """
 
@@ -37,11 +37,11 @@ __author__ = 'Bitcraze AB'
 __all__ = ['WrongUriType', 'CommunicationException']
 
 
-class WrongUriType (Exception):
+class WrongUriType(Exception):
     """ Wrong type of URI for this interface """
     pass
 
 
-class CommunicationException (Exception):
+class CommunicationException(Exception):
     """ Communication problem when communicating with a Crazyflie """
     pass
