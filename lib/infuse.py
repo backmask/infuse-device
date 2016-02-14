@@ -9,7 +9,6 @@ class Infuse(object):
   def __init__(self, address, description, recv_callback):
     description['method'] = '/bootstrap/device'
     self.address = address
-    #self.bootstrap_message = json.JSONEncoder().encode(description)
     self.bootstrap_message = description
     self.buffer = False
     self.socket = False
@@ -79,8 +78,8 @@ class Infuse(object):
 
   def _parse_buffer(self):
     try:
-      decoded = json.JSONDecoder().raw_decode(str(self.buffer))
-    except ValueError:
+      decoded = json.JSONDecoder().raw_decode(self.buffer.decode('UTF-8'))
+    except ValueError as e:
       return
 
     if decoded[1] > 0:

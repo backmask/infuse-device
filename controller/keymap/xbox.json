@@ -4,8 +4,8 @@
     { "symbol": "l", "property": "x"},
     { "symbol": "l", "property": "y"},
     { "symbol": "lt", "property": "y"},
-    { "symbol": "r", "property": "x"},
     { "symbol": "r", "property": "y"},
+    { "symbol": "r", "property": "x"},
     { "symbol": "rt", "property": "y"}
   ],
   "buttons": [
@@ -17,7 +17,6 @@
     "rb",
     "select",
     "start",
-    "home",
     "l",
     "r"
   ]
