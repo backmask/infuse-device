@@ -92,7 +92,7 @@ class CrazyControl(object):
 
   def _setup_remote(self):
     print('Connecting to remote')
-    self._infuse = Infuse(('localhost', 2946), {
+    self._infuse = Infuse(('server', 2946), {
         'name': 'Crazyflie',
         'family': 'flight.quadcopter',
         'version': 'crazyflie-1.0.0',
@@ -233,24 +233,26 @@ class CrazyControl(object):
 
     try:
       while True:
+        print('calling next')
         for motor in motors:
-          next(motor)
+          motor.next()
 
+        print('done')
         idx += 1
         timestamp += 1000
 
         self._send_stabilizer(
           timestamp,
-          next(yaw),
-          next(pitch),
-          next(roll),
-          next(barometer_asl)
+          yaw.next(),
+          pitch.next(),
+          roll.next(),
+          barometer_asl.next()
         )
 
         self._send_acceleration(
-          next(acc_x),
-          next(acc_y),
-          next(acc_z)
+          acc_x.next(),
+          acc_y.next(),
+          acc_z.next()
         )
 
         if idx % 10 == 0:

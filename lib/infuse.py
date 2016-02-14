@@ -79,7 +79,7 @@ class Infuse(object):
 
   def _parse_buffer(self):
     try:
-      decoded = json.JSONDecoder().raw_decode(str(self.buffer, 'UTF-8'))
+      decoded = json.JSONDecoder().raw_decode(str(self.buffer))
     except ValueError:
       return
 
