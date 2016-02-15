@@ -106,22 +106,25 @@ class Controller(object):
 
     return True
 
-  def loop(self):
+  def connect(self):
     print('')
-    infuse = Infuse(('server', 2946), {
+    self.infuse = Infuse(('server', 2946), {
         'name': 'Wii U controller',
         'family': 'controller',
         'version': 'remote-1.0.0',
         'sensors': ['joystick', 'button', 'nav-cross']
       }, self.recv_callback)
-    infuse.connect()
+    self.infuse.connect()
+
+  def loop(self):
+    self.connect()
 
     try:
       while True:
         for evt in pygame.event.get():
           self.read_input(evt)
 
-        infuse.send({
+        self.infuse.send({
           'joystick': self.joysticks,
           'button': self.buttons,
           'cross': self.crosses
@@ -132,10 +135,41 @@ class Controller(object):
       pass
 
     print('Disconnecting')
-    infuse.disconnect()
+    self.infuse.disconnect()
 
     print('Done')
 
   def run(self):
     if self.init():
       self.loop()
+
+  def run_fake(self):
+    self.joysticks = [{
+        'symbol': symbol,
+        'x': 0,
+        'y': 0
+      } for symbol in ['l', 'r']]
+
+    self.buttons = [{
+        'symbol': symbol,
+        'pressed': False
+      } for symbol in ['a', 'b', 'lt', 'rt', 'l', 'r', 'start', 'select']]
+
+    self.connect()
+
+    try:
+      while True:
+        self.infuse.send({
+          'joystick': self.joysticks,
+          'button': self.buttons,
+          'cross': self.crosses
+          })
+
+        sleep(0.02)
+    except KeyboardInterrupt:
+      pass
+
+    print('Disconnecting')
+    self.infuse.disconnect()
+
+    print('Done')
