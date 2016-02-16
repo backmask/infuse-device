@@ -3,6 +3,7 @@ import pygame.locals
 import sys
 from time import sleep
 from lib.infuse import Infuse
+from lib.signalgenerator import OscillatingSignal
 from .keymap import keymap
 
 class Controller(object):
@@ -157,8 +158,16 @@ class Controller(object):
 
     self.connect()
 
+    thrust_generator = OscillatingSignal(-1, 0, 0.035)
+    lx_generator = OscillatingSignal(-1, 1, 0.015)
+    ly_generator = OscillatingSignal(-1, 1, 0.02)
+
     try:
       while True:
+        self.joysticks[0]['x'] = lx_generator.next()
+        self.joysticks[0]['y'] = ly_generator.next()
+        self.joysticks[1]['y'] = thrust_generator.next()
+
         self.infuse.send({
           'joystick': self.joysticks,
           'button': self.buttons,

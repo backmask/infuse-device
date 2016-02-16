@@ -8,7 +8,10 @@ class OscillatingSignal(object):
     self.value = begin
 
   def next(self):
-    self.value += self.step() * self.speed
+    if callable(self.step):
+      self.value += self.step() * self.speed
+    else:
+      self.value += self.step * self.speed
 
     if self.value >= self.end:
       self.speed *= -1
