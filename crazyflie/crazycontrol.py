@@ -64,12 +64,12 @@ class CrazyControl(object):
 
   def _setup_logger(self):
     print("Setting up logger")
-    lg = LogConfig(name="Stabilizer", period_in_ms=10)
-    lg.add_variable("stabilizer.roll", "float")
-    lg.add_variable("stabilizer.pitch", "float")
-    lg.add_variable("stabilizer.yaw", "float")
-    lg.add_variable("baro.aslLong", "float")
-    self._attachConfig(lg, self._on_stabilizer_update)
+    # lg = LogConfig(name="Stabilizer", period_in_ms=10)
+    # lg.add_variable("stabilizer.roll", "float")
+    # lg.add_variable("stabilizer.pitch", "float")
+    # lg.add_variable("stabilizer.yaw", "float")
+    # lg.add_variable("baro.aslLong", "float")
+    # self._attachConfig(lg, self._on_stabilizer_update)
 
     lg = LogConfig(name="Acceleration", period_in_ms=10)
     lg.add_variable("acc.x", "float")
@@ -78,13 +78,13 @@ class CrazyControl(object):
     lg.add_variable("baro.aslLong", "float")
     self._attachConfig(lg, self._on_acceleration_update)
 
-    lg = LogConfig(name="Thrust", period_in_ms=100)
-    lg.add_variable("stabilizer.thrust", "uint16_t")
-    lg.add_variable("motor.m1", "int32_t")
-    lg.add_variable("motor.m2", "int32_t")
-    lg.add_variable("motor.m3", "int32_t")
-    lg.add_variable("motor.m4", "int32_t")
-    self._attachConfig(lg, self._on_telemetry_update)
+    # lg = LogConfig(name="Thrust", period_in_ms=100)
+    # lg.add_variable("stabilizer.thrust", "uint16_t")
+    # lg.add_variable("motor.m1", "int32_t")
+    # lg.add_variable("motor.m2", "int32_t")
+    # lg.add_variable("motor.m3", "int32_t")
+    # lg.add_variable("motor.m4", "int32_t")
+    # self._attachConfig(lg, self._on_telemetry_update)
 
     lg = LogConfig(name="Status", period_in_ms=1000)
     lg.add_variable("pm.vbat", "float")
@@ -114,17 +114,17 @@ class CrazyControl(object):
 
   def _on_stabilizer_update(self, timestamp, data, logconf):
     self._send_stabilizer(
-      timestamp,
       data['stabilizer.roll'],
       data['stabilizer.pitch'],
-      data['stabilizer.yaw'],
-      data['baro.aslLong'])
+      data['stabilizer.yaw'])
 
   def _on_acceleration_update(self, timestamp, data, logconf):
     self._send_acceleration(
+      timestamp,
       data['acc.x'],
       data['acc.y'],
-      data['acc.z'])
+      data['acc.z'],
+      data['baro.aslLong'])
 
   def _on_telemetry_update(self, timestamp, data, logconf):
     self._send_telemetry([
@@ -138,25 +138,25 @@ class CrazyControl(object):
   def _on_status_update(self, timestamp, data, logconf):
     self._send_status(self._interpolate(data['pm.vbat'], MIN_BATTERY, MAX_BATTERY))
 
-  def _send_stabilizer(self, timestamp, roll, pitch, yaw, barometer):
+  def _send_stabilizer(self, roll, pitch, yaw):
     self._infuse.send({
       'gyroscope': {
         'roll': roll,
         'pitch': pitch,
         'yaw': yaw,
-      },
-      'barometer.asl': {
-        'value': barometer,
-        'timestamp': timestamp
       }
     })
 
-  def _send_acceleration(self, acc_x, acc_y, acc_z):
+  def _send_acceleration(self, timestamp, acc_x, acc_y, acc_z, barometer):
     self._infuse.send({
       'acceleration': {
         'x': acc_x,
         'y': acc_y,
         'z': acc_z
+      },
+      'barometer.asl': {
+        'value': barometer,
+        'timestamp': timestamp
       }
     })
 
@@ -233,11 +233,9 @@ class CrazyControl(object):
 
     try:
       while True:
-        print('calling next')
         for motor in motors:
           motor.next()
 
-        print('done')
         idx += 1
         timestamp += 1000
 
